@@ -4,7 +4,7 @@ import subprocess
 from ipaddress import IPv4Network, collapse_addresses
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 import yaml
 
@@ -18,12 +18,14 @@ from domain_rules import (
 
 ROOT = Path(__file__).resolve().parents[1]
 LOYALSOLDIER = "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release"
-CHNROUTES = "https://chnroutes2.cdn.skk.moe/chnroutes.txt"
+CHINA_IP_URL = "https://ruleset.skk.moe/Clash/ip/china_ip.txt"
+MIHOMO_USER_AGENT = "clash.meta/v1.19.34"
 SING_BOX_RULESET_VERSION = 4
 
 
-def fetch(url: str) -> str:
-    with urlopen(url, timeout=30) as response:
+def fetch(url: str, *, user_agent: str | None = None) -> str:
+    headers = {"User-Agent": user_agent} if user_agent else {}
+    with urlopen(Request(url, headers=headers), timeout=30) as response:
         return response.read().decode("utf-8")
 
 
@@ -58,7 +60,7 @@ def build_router(output: Path) -> None:
 def build_cncidr(output: Path) -> None:
     networks = [
         IPv4Network(line)
-        for raw_line in fetch(CHNROUTES).splitlines()
+        for raw_line in fetch(CHINA_IP_URL, user_agent=MIHOMO_USER_AGENT).splitlines()
         if (line := raw_line.strip()) and not line.startswith("#")
     ]
     cidrs = [str(network) for network in networks]
