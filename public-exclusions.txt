@@ -1,0 +1,4 @@
+# One domain suffix per line. Both example.com and +.example.com are accepted.
+apple.com
+akadns.net
+microsoft.com
