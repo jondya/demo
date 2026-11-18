@@ -120,3 +120,22 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  cleanup:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+      deployments: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Delete previous deployments and workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/cleanup_github_history.sh
